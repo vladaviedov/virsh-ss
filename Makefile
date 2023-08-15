@@ -1,18 +1,14 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -g
 LDFLAGS=
-BUILDDIR=build
-OUT=$(BUILDDIR)/virsh-ss
+OUT=virsh-ss
 
 .PHONY=all
-all: $(BUILDDIR) $(OUT)
+all: $(OUT)
 
 .PHONY=clean
 clean:
-	rm -r $(BUILDDIR)
+	rm $(OUT)
 
-$(BUILDDIR):
-	mkdir -p $(BUILDDIR)
-
-$(OUT): main.c
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+$(OUT): main.c charmap.h
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
