@@ -6,6 +6,10 @@
 
 #include "charmap.h"
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
 #define VIRSH_SS "virsh-ss"
 #define VIRSH_SS_VERSION "0.1"
 
@@ -59,7 +63,7 @@ int main(int argc, char **argv) {
 		if (send_key(domain, input[i]) != EXIT_SUCCESS) {
 			fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
 			if (i > 0) {
-				fprintf(stderr, "wmacrosarning: %u keys have been sent\n", i);
+				fprintf(stderr, "warning: %u keys have been sent\n", i);
 			}
 			return EXIT_FAILURE;
 		}
@@ -128,13 +132,15 @@ int send_key(const char *domain, const char c) {
 		args[4] = NULL;
 	}
 
-	printf("debug: sending command\n");
-	printf("%s\n", args[0]);
-	printf("%s\n", args[1]);
-	printf("%s\n", args[2]);
-	printf("%s\n", args[3]);
-	if (shifted) {
-		printf("%s\n", args[4]);
+	if (DEBUG) {
+		printf("debug: sending command\n");
+		printf("\t%s\n", args[0]);
+		printf("\t%s\n", args[1]);
+		printf("\t%s\n", args[2]);
+		printf("\t%s\n", args[3]);
+		if (shifted) {
+			printf("\t%s\n", args[4]);
+		}
 	}
 
 	return run_virsh(args);

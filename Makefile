@@ -1,14 +1,22 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -g
+CFLAGS_RELEASE=-O2
+CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
 LDFLAGS=
-OUT=virsh-ss
+OUT_RELEASE=virsh-ss
+OUT_DEBUG=virsh-ss-debug
 
-.PHONY=all
-all: $(OUT)
+.PHONY=release
+release: $(OUT_RELEASE)
+
+.PHONY=debug
+debug: $(OUT_DEBUG)
 
 .PHONY=clean
 clean:
-	rm $(OUT)
+	rm $(OUT_RELEASE) $(OUT_DEBUG)
 
-$(OUT): main.c charmap.h
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+$(OUT_RELEASE): main.c charmap.h
+	$(CC) $(CFLAGS_RELEASE) -o $@ $< $(LDFLAGS)
+
+$(OUT_DEBUG): main.c charmap.h
+	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(LDFLAGS)
