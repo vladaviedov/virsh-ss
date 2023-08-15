@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include "charmap.h"
 
@@ -21,6 +22,8 @@
 #define VIRSH "virsh"
 #define SEND_KEY "send-key"
 #define SHIFT_KEY "KEY_LEFTSHIFT"
+
+#define DEV_NULL "/dev/null"
 
 void print_usage(void);
 int verify_key(const char c);
@@ -216,6 +219,11 @@ int run_virsh(char *const *args) {
 
 	// Child code
 	if (pid == 0) {
+		// Redirect output to /dev/null
+		int dev_null = open(DEV_NULL, O_WRONLY);
+		dup2(dev_null, STDOUT_FILENO);
+		close(dev_null);
+
 		execvp(args[0], args);
 		fprintf(stderr, "%s: faioptionsled to exec virsh\n", VIRSH_SS);
 		exit(EXIT_FAILURE);
