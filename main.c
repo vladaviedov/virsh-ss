@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #include "charmap.h"
 
@@ -22,13 +24,11 @@
 
 void print_usage(void);
 int verify_key(const char c);
-int send_key(const char *domain, const char c);
+int send_key(char *domain, const char c);
 int is_shifted(const char c);
 void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size);
-int run_virsh(const char **args);
+int run_virsh(char *const *args);
 
-// virsh send-key DOMAIN KEYS
-// virsh-ss DOMAIN STRING
 int main(int argc, char **argv) {
 	// Check for special commands
 	char *last_arg = argv[argc - 1];
@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	const char *domain = argv[1];
-	const char *input = argv[2];
+	char *domain = argv[1];
+	char *input = argv[2];
 
 	// Verify keys
 	for (uint32_t i = 0; i < strlen(input); i++) {
@@ -110,7 +110,7 @@ int verify_key(const char c) {
  * @param[in] c - Character to send
  * @return Exit code.
  */
-int send_key(const char *domain, const char c) {
+int send_key(char *domain, const char c) {
 	int shifted = is_shifted(c);
 
 	// Make key
@@ -118,7 +118,7 @@ int send_key(const char *domain, const char c) {
 	format_key(c, shifted, key_name, 32);
 
 	// virsh send-key DOMAIN (KEY_LEFTSHIFT) KEY NULL
-	const char *args[5 + shifted];
+	char *args[5 + shifted];
 	args[0] = VIRSH;
 	args[1] = SEND_KEY;
 	args[2] = domain;
@@ -206,7 +206,23 @@ void format_key(const char c, const int shifted, char *buffer, const uint32_t bu
  * @param[in] args - Program arguments.
  * @return Exit code.
  */
-int run_virsh(const char **args) {
-	// TODO: exec
-	return 0;
+int run_virsh(char *const *args) {
+	// Fork process
+	pid_t pid = fork();
+	if (pid < 0) {
+		fprintf(stderr, "%s: failed to fork process\n", VIRSH_SS);
+		return EXIT_FAILURE;
+	}
+
+	// Child code
+	if (pid == 0) {
+		execvp(args[0], args);
+		fprintf(stderr, "%s: faioptionsled to exec virsh\n", VIRSH_SS);
+		exit(EXIT_FAILURE);
+	}
+
+	// Parent code
+	int result;
+	waitpid(pid, &result, 0);
+	return WEXITSTATUS(result);
 }
