@@ -16,3 +16,4 @@ Options:
 - `-v, --version`: show program version
 - `-p, --prompt`: prompt for string, instead of reading from arguments
 - `-s, --secret`: inputted string will be hidden (if prompt is set)
+- `-n, --newline`: send newline character at the end

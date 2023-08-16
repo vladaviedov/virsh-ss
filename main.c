@@ -17,7 +17,7 @@
 #endif
 
 #define VIRSH_SS "virsh-ss"
-#define VIRSH_SS_VERSION "0.2"
+#define VIRSH_SS_VERSION "0.3"
 
 #define VERSION_STR "--version"
 #define HELP_STR "--help"
@@ -31,12 +31,14 @@
 
 static int prompt = 0;
 static int secret = 0;
+static int newline = 0;
 
 static struct option opts[] = {
 	{ "help", no_argument, 0, 'h' },
 	{ "version", no_argument, 0, 'v' },
 	{ "prompt", no_argument, &prompt, 'p' },
-	{ "secret", no_argument, &secret, 's' }
+	{ "secret", no_argument, &secret, 's' },
+	{ "newline", no_argument, &newline, 'n' }
 };
 
 char *get_input(void);
@@ -96,6 +98,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	if (newline) {
+		if (send_key(domain, '\n') != EXIT_SUCCESS) {
+			fprintf(stderr, "%s: failed to send newline\n", VIRSH_SS);
+			fprintf(stderr, "warning: string was sent\n");
+			return EXIT_FAILURE;
+		}
+	}
+
 	if (prompt) {
 		free(input);
 	}
@@ -138,6 +148,7 @@ void print_usage(void) {
 	printf("\t-v, --version - show program version\n");
 	printf("\t-p, --prompt - ask for string as a prompt\n");
 	printf("\t-s, --secret - prompt input is hidden if used\n");
+	printf("\t-n, --newline - send newline character at the end\n");
 }
 
 /**

@@ -20,6 +20,8 @@
 #define KEY_APOSTROPHE "KEY_APOSTROPHE"
 #define KEY_COMMA "KEY_COMMA"
 #define KEY_DOT "KEY_DOT"
+#define KEY_SPACE "KEY_SPACE"
+#define KEY_ENTER "KEY_ENTER"
 
 typedef struct {
 	const char unshifted;
@@ -48,5 +50,7 @@ static const kb_key misc_keys[] = {
 	{ ';', ':', KEY_SEMICOLON },
 	{ '\'', '"', KEY_APOSTROPHE },
 	{ ',', '<', KEY_COMMA },
-	{ '.', '>', KEY_DOT }
+	{ '.', '>', KEY_DOT },
+	{ ' ', '\0', KEY_SPACE },
+	{ '\n', '\0', KEY_ENTER }
 };
