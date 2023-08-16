@@ -113,6 +113,11 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
+/**
+ * @brief Read input from the user.
+ *
+ * @return Input string (must be freed).
+ */
 char *get_input(void) {
 	struct termios term;
 	if (secret) {
@@ -177,7 +182,7 @@ int verify_key(const char c) {
  * @brief Send single key to a libvirt domain.
  *
  * @param[in] domain - Libvirt domain.
- * @param[in] c - Character to send
+ * @param[in] c - Character to send.
  * @return Exit code.
  */
 int send_key(char *domain, const char c) {
