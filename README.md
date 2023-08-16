@@ -8,6 +8,11 @@ Debug build: \
 `make debug`
 
 ## Usage
-`virsh-ss <domain> <string>`
+`virsh-ss <domain> <string> [options]`
 - domain: libvirt domain name
-- string: string of characters to send
+- string: string of characters to send (if prompt not set)
+Options:
+- `-h, --help`: show usage information
+- `-v, --version`: show program version
+- `-p, --prompt`: prompt for string, instead of reading from arguments
+- `-s, --secret`: inputted string will be hidden (if prompt is set)
