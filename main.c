@@ -17,7 +17,7 @@
 #endif
 
 #define VIRSH_SS "virsh-ss"
-#define VIRSH_SS_VERSION "0.3"
+#define VIRSH_SS_VERSION "0.4"
 
 #define VERSION_STR "--version"
 #define HELP_STR "--help"
