@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
-LDFLAGS=
+LDFLAGS=-lreadline
 OUT_RELEASE=virsh-ss
 OUT_DEBUG=virsh-ss-debug
 
