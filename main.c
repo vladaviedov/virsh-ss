@@ -29,29 +29,34 @@
 #define DEV_NULL "/dev/null"
 #define INPUT_SIZE 1024
 
+#define DEFAULT_SPEED 1
+
 static int prompt = 0;
 static int secret = 0;
 static int newline = 0;
+static uint32_t speed = DEFAULT_SPEED;
 
 static struct option opts[] = {
 	{ "help", no_argument, 0, 'h' },
 	{ "version", no_argument, 0, 'v' },
 	{ "prompt", no_argument, &prompt, 'p' },
 	{ "secret", no_argument, &secret, 's' },
-	{ "newline", no_argument, &newline, 'n' }
+	{ "newline", no_argument, &newline, 'n' },
+	{ "speed", required_argument, 0, 'l' }
 };
 
 char *get_input(void);
 void print_usage(void);
 int verify_key(const char c);
 int send_key(char *domain, const char c);
+int send_keys(char *domain, const char *c, uint32_t count);
 int is_shifted(const char c);
 void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size);
 int run_virsh(char *const *args);
 
 int main(int argc, char **argv) {
 	char opt;
-	while ((opt = getopt_long(argc, argv, "hvps", opts, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hvpsl:", opts, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 				print_usage();
@@ -59,19 +64,25 @@ int main(int argc, char **argv) {
 			case 'v':
 				printf("%s v%s\n", VIRSH_SS, VIRSH_SS_VERSION);
 				return EXIT_SUCCESS;
+			case 'l': {
+				int32_t speed_input = atoi(optarg);
+				if (speed_input > 15 || speed_input < 1) {
+					fprintf(stderr, "%s: invalid speed value, must be 1-15\n", VIRSH_SS);
+					return EXIT_FAILURE;
+				}
+				speed = speed_input;
+				break;
+			}
 			case '?':
-				fprintf(stderr, "%s: invalid argument", VIRSH_SS);
+				fprintf(stderr, "%s: invalid argument\n", VIRSH_SS);
 				return EXIT_FAILURE;
 			default:
 				break;
 		}
 	}
 
-	if (prompt) prompt = 1;
-	if (secret) secret = 1;
-
 	// Check arg count: 1 if prompt, 2 if not prompt
-	if (argc - optind != 2 - prompt) {
+	if (argc - optind != 2 - !!prompt) {
 		fprintf(stderr, "%s: invalid arguments\n", VIRSH_SS);
 		print_usage();
 		return EXIT_FAILURE;
@@ -83,18 +94,47 @@ int main(int argc, char **argv) {
 	// Verify keys
 	for (uint32_t i = 0; i < strlen(input); i++) {
 		if (!verify_key(input[i])) {
-			fprintf(stderr, "%s: unsupported key -- %c", VIRSH_SS, input[i]);
+			fprintf(stderr, "%s: unsupported key -- %c\n", VIRSH_SS, input[i]);
 		};
 	}
 
-	// Send keys
-	for (uint32_t i = 0; i < strlen(input); i++) {
-		if (send_key(domain, input[i]) != EXIT_SUCCESS) {
-			fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
-			if (i > 0) {
-				fprintf(stderr, "warning: %u keys have been sent\n", i);
+	if (speed > 1) {
+		// Fast send if applicable
+		uint32_t current = 0;
+		while (current < strlen(input)) {
+			int is_seq_shifted = is_shifted(input[current]);
+			uint32_t search = current + 1;
+
+			// Search until speed reached, end of string or different shifting
+			while (search - current < speed &&
+				   search < strlen(input) &&
+				   is_shifted(input[search]) == is_seq_shifted)
+			{
+				search++;
 			}
-			return EXIT_FAILURE;
+
+			// Characters start at index current, end at difference
+			if (send_keys(domain, input + current, search - current) != EXIT_SUCCESS) {
+				fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
+				if (current > 0) {
+					fprintf(stderr, "warning: %u keys have been sent\n", current);
+				}
+				return EXIT_FAILURE;
+			}
+
+			// Update start
+			current += search;
+		}
+	} else {
+		// Send keys one-by-one
+		for (uint32_t i = 0; i < strlen(input); i++) {
+			if (send_key(domain, input[i]) != EXIT_SUCCESS) {
+				fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
+				if (i > 0) {
+					fprintf(stderr, "warning: %u keys have been sent\n", i);
+				}
+				return EXIT_FAILURE;
+			}
 		}
 	}
 
@@ -154,6 +194,8 @@ void print_usage(void) {
 	printf("\t-p, --prompt - ask for string as a prompt\n");
 	printf("\t-s, --secret - prompt input is hidden if used\n");
 	printf("\t-n, --newline - send newline character at the end\n");
+	printf("\t-l, --speed - max amount of characters sent per virsh command (1-15)\n");
+	printf("\t              higher values might cause issues (default: 1)\n");
 }
 
 /**
@@ -219,6 +261,57 @@ int send_key(char *domain, const char c) {
 	}
 
 	return run_virsh(args);
+}
+
+/**
+ * @brief Send 'count' keys to a libvirt domain.
+ *
+ * @param[in] domain - Libvirt domain.
+ * @param[in] c - Character array to send.
+ * @param[in] count - Amount of characters in 'c'
+ * @return [TODO:description]
+ */
+int send_keys(char *domain, const char *c, uint32_t count) {
+	int shifted = is_shifted(c[0]);
+
+	// Make keys
+	char *key_names[count];
+	for (uint32_t i = 0; i < count; i++) {
+		key_names[i] = malloc(sizeof(char) * 32);
+		format_key(c[i], shifted, key_names[i], 32);
+	}
+
+	// virsh send-key DOMAIN (KEY_LEFTSHIFT) [KEYS] NULL
+	char *args[4 + shifted + count];
+	args[0] = VIRSH;
+	args[1] = SEND_KEY;
+	args[2] = domain;
+
+	if (shifted) {
+		args[3] = SHIFT_KEY;
+	}
+
+	for (uint32_t i = 0; i < count; i++) {
+		args[3 + shifted + i] = key_names[i];
+	}
+	args[3 + shifted + count] = NULL;
+
+	if (DEBUG) {
+		printf("debug: sending command\n");
+		for (uint32_t i = 0; i < 3 + shifted + count; i++) {
+			printf("\t%s\n", args[i]);
+		}
+	}
+
+	// Run
+	int result = run_virsh(args);
+	
+	// Cleanup
+	for (uint32_t i = 0; i < count; i++) {
+		free(key_names[i]);
+	}
+
+	return result;
 }
 
 /**

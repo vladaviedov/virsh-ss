@@ -17,3 +17,4 @@ Options:
 - `-p, --prompt`: prompt for string, instead of reading from arguments
 - `-s, --secret`: inputted string will be hidden (if prompt is set)
 - `-n, --newline`: send newline character at the end
+- `-l, --speed`: maximum characters spent per `virsh` command (1-15), default: 1
