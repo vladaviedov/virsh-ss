@@ -6,8 +6,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <getopt.h>
 #include <termios.h>
+#include <signal.h>
+#include <getopt.h>
 #include <readline/readline.h>
 
 #include "charmap.h"
@@ -17,7 +18,7 @@
 #endif
 
 #define VIRSH_SS "virsh-ss"
-#define VIRSH_SS_VERSION "0.4"
+#define VIRSH_SS_VERSION "0.5"
 
 #define VERSION_STR "--version"
 #define HELP_STR "--help"
@@ -53,6 +54,7 @@ int send_keys(char *domain, const char *c, uint32_t count);
 int is_shifted(const char c);
 void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size);
 int run_virsh(char *const *args);
+void exit_handler(int code);
 
 int main(int argc, char **argv) {
 	char opt;
@@ -87,6 +89,11 @@ int main(int argc, char **argv) {
 		print_usage();
 		return EXIT_FAILURE;
 	}
+
+	// Install signal handlers
+	signal(SIGINT, &exit_handler);
+	signal(SIGTERM, &exit_handler);
+	signal(SIGQUIT, &exit_handler);
 
 	char *domain = argv[optind];
 	char *input = prompt ? get_input() : argv[optind + 1];
@@ -398,4 +405,20 @@ int run_virsh(char *const *args) {
 	int result;
 	waitpid(pid, &result, 0);
 	return WEXITSTATUS(result);
+}
+
+/**
+ * @brief Return echo to tty if in secret mode and exit.
+ *
+ * @param[in] code - Exit code.
+ */
+void exit_handler(int code) {
+	if (secret) {
+		struct termios term;
+		tcgetattr(STDIN_FILENO, &term);
+		term.c_lflag |= ECHO;
+		tcsetattr(STDIN_FILENO, 0, &term);
+	}
+
+	exit(code);
 }
