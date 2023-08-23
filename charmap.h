@@ -20,6 +20,7 @@
 #define KEY_APOSTROPHE "KEY_APOSTROPHE"
 #define KEY_COMMA "KEY_COMMA"
 #define KEY_DOT "KEY_DOT"
+#define KEY_SLASH "KEY_SLASH"
 #define KEY_SPACE "KEY_SPACE"
 #define KEY_ENTER "KEY_ENTER"
 
@@ -51,6 +52,7 @@ static const kb_key misc_keys[] = {
 	{ '\'', '"', KEY_APOSTROPHE },
 	{ ',', '<', KEY_COMMA },
 	{ '.', '>', KEY_DOT },
+	{ '/', '?', KEY_SLASH },
 	{ ' ', '\0', KEY_SPACE },
 	{ '\n', '\0', KEY_ENTER }
 };
