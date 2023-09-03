@@ -38,12 +38,12 @@ static int newline = 0;
 static uint32_t speed = DEFAULT_SPEED;
 
 static struct option opts[] = {
-	{ "help", no_argument, 0, 'h' },
-	{ "version", no_argument, 0, 'v' },
+	{ "help", no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'v' },
 	{ "prompt", no_argument, &prompt, 'p' },
 	{ "secret", no_argument, &secret, 's' },
 	{ "newline", no_argument, &newline, 'n' },
-	{ "speed", required_argument, 0, 'l' }
+	{ "speed", required_argument, NULL, 'l' }
 };
 
 char *get_input(void);

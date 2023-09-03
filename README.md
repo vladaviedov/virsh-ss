@@ -11,6 +11,7 @@ Debug build: \
 `virsh-ss <domain> <string> [options]`
 - domain: libvirt domain name
 - string: string of characters to send (if prompt not set)
+
 Options:
 - `-h, --help`: show usage information
 - `-v, --version`: show program version
@@ -26,4 +27,4 @@ Unlock a encrypt VM without using a GUI:
 1. Run the command `virsh-ss --prompt --secret --newline DOMAIN`
 2. Input luks password
 
-DOMAIN will not be unlocked
+DOMAIN will now be unlocked
