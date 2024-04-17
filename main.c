@@ -20,9 +20,6 @@
 #define VIRSH_SS "virsh-ss"
 #define VIRSH_SS_VERSION "0.5"
 
-#define VERSION_STR "--version"
-#define HELP_STR "--help"
-
 #define VIRSH "virsh"
 #define SEND_KEY "send-key"
 #define SHIFT_KEY "KEY_LEFTSHIFT"
@@ -40,25 +37,25 @@ static uint32_t speed = DEFAULT_SPEED;
 static struct option opts[] = {
 	{ "help", no_argument, NULL, 'h' },
 	{ "version", no_argument, NULL, 'v' },
-	{ "prompt", no_argument, &prompt, 'p' },
-	{ "secret", no_argument, &secret, 's' },
-	{ "newline", no_argument, &newline, 'n' },
+	{ "prompt", no_argument, NULL, 'p' },
+	{ "secret", no_argument, NULL, 's' },
+	{ "newline", no_argument, NULL, 'n' },
 	{ "speed", required_argument, NULL, 'l' }
 };
 
-char *get_input(void);
-void print_usage(void);
-int verify_key(const char c);
-int send_key(char *domain, const char c);
-int send_keys(char *domain, const char *c, uint32_t count);
-int is_shifted(const char c);
-void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size);
-int run_virsh(char *const *args);
-void exit_handler(int code);
+static char *get_input(void);
+static void print_usage(void);
+static int verify_key(const char c);
+static int send_key(char *domain, const char c);
+static int send_keys(char *domain, const char *c, uint32_t count);
+static int is_shifted(const char c);
+static void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size);
+static int run_virsh(char *const *args);
+static void exit_handler(int code);
 
 int main(int argc, char **argv) {
 	char opt;
-	while ((opt = getopt_long(argc, argv, "hvpsl:", opts, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hvpsnl:", opts, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 				print_usage();
@@ -66,6 +63,15 @@ int main(int argc, char **argv) {
 			case 'v':
 				printf("%s v%s\n", VIRSH_SS, VIRSH_SS_VERSION);
 				return EXIT_SUCCESS;
+			case 'p':
+				prompt = 1;
+				break;
+			case 's':
+				secret = 1;
+				break;
+			case 'n':
+				newline = 1;
+				break;
 			case 'l': {
 				int32_t speed_input = atoi(optarg);
 				if (speed_input > 15 || speed_input < 1) {
@@ -84,7 +90,8 @@ int main(int argc, char **argv) {
 	}
 
 	// Check arg count: 1 if prompt, 2 if not prompt
-	if (argc - optind != 2 - !!prompt) {
+	uint32_t arg_count = argc - optind;
+	if ((prompt && arg_count != 1) || (!prompt && arg_count != 2)) {
 		fprintf(stderr, "%s: invalid arguments\n", VIRSH_SS);
 		print_usage();
 		return EXIT_FAILURE;

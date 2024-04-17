@@ -13,7 +13,7 @@ debug: $(OUT_DEBUG)
 
 .PHONY=clean
 clean:
-	rm $(OUT_RELEASE) $(OUT_DEBUG)
+	rm -f $(OUT_RELEASE) $(OUT_DEBUG)
 
 $(OUT_RELEASE): main.c charmap.h
 	$(CC) $(CFLAGS_RELEASE) -o $@ $< $(LDFLAGS)
