@@ -2,21 +2,29 @@ CC=gcc
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
 LDFLAGS=-lreadline
-OUT_RELEASE=virsh-ss
-OUT_DEBUG=virsh-ss-debug
 
-.PHONY=release
-release: $(OUT_RELEASE)
+BUILD=build
+TARGET_RELEASE=$(BUILD)/virsh-ss
+TARGET_DEBUG=$(BUILD)/virsh-ss-debug
 
-.PHONY=debug
-debug: $(OUT_DEBUG)
+.PHONY: all
+all: release debug
 
-.PHONY=clean
+.PHONY: release
+release: $(BUILD) $(TARGET_RELEASE)
+
+.PHONY: debug
+debug: $(BUILD) $(TARGET_DEBUG)
+
+.PHONY: clean
 clean:
-	rm -f $(OUT_RELEASE) $(OUT_DEBUG)
+	rm -rf $(BUILD)
 
-$(OUT_RELEASE): main.c charmap.h
+$(BUILD):
+	mkdir -p $(BUILD)
+
+$(TARGET_RELEASE): main.c charmap.h
 	$(CC) $(CFLAGS_RELEASE) -o $@ $< $(LDFLAGS)
 
-$(OUT_DEBUG): main.c charmap.h
+$(TARGET_DEBUG): main.c charmap.h
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(LDFLAGS)

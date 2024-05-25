@@ -1,11 +1,10 @@
 # virsh-ss
 
 ## Build
-Normal build: \
-`make`
-
-Debug build: \
-`make debug`
+- `make [all]` - Build both binaries.
+- `make release` - Build release binary.
+- `make debug` - Build debug binary.
+- `make clean` - Remove build files.
 
 ## Usage
 `virsh-ss <domain> <string> [options]`
@@ -20,11 +19,9 @@ Options:
 - `-n, --newline`: send newline character at the end
 - `-l, --speed`: maximum characters spent per `virsh` command (1-15), default: 1
 
-## Example
+## Examples
 
 ### Unlocking Encrypted VM
-Unlock a encrypt VM without using a GUI:
+Unlock a LUKS encrypted VM without using a GUI:
 1. Run the command `virsh-ss --prompt --secret --newline DOMAIN`
 2. Input luks password
-
-DOMAIN will now be unlocked
