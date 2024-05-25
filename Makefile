@@ -28,3 +28,18 @@ $(TARGET_RELEASE): main.c charmap.h
 
 $(TARGET_DEBUG): main.c charmap.h
 	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(LDFLAGS)
+
+# Formatting
+FORMAT=clang-format
+FORMAT_CHECK_FLAGS=--dry-run --Werror
+FORMAT_FIX_FLAGS=-i
+
+FORMAT_FILES=main.c charmap.h
+
+.PHONY: checkformat
+checkformat:
+	$(FORMAT) $(FORMAT_CHECK_FLAGS) $(FORMAT_FILES)
+
+.PHONY: format
+format:
+	$(FORMAT) $(FORMAT_FIX_FLAGS) $(FORMAT_FILES)

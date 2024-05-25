@@ -4,23 +4,24 @@
  * @date 2023-2024
  * @license GPLv3.0
  */
+#include <ctype.h>
+#include <fcntl.h>
+#include <getopt.h>
+#include <signal.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <ctype.h>
-#include <unistd.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <termios.h>
-#include <signal.h>
-#include <getopt.h>
+#include <unistd.h>
+
 #include <readline/readline.h>
 
 #include "charmap.h"
 
 #ifndef DEBUG
-#define DEBUG 0
+	#define DEBUG 0
 #endif
 
 #define VIRSH_SS "virsh-ss"
@@ -41,12 +42,12 @@ static int newline = 0;
 static uint32_t speed = DEFAULT_SPEED;
 
 static struct option opts[] = {
-	{ "help", no_argument, NULL, 'h' },
-	{ "version", no_argument, NULL, 'v' },
-	{ "prompt", no_argument, NULL, 'p' },
-	{ "secret", no_argument, NULL, 's' },
-	{ "newline", no_argument, NULL, 'n' },
-	{ "speed", required_argument, NULL, 'l' }
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"prompt", no_argument, NULL, 'p'},
+	{"secret", no_argument, NULL, 's'},
+	{"newline", no_argument, NULL, 'n'},
+	{"speed", required_argument, NULL, 'l'},
 };
 
 static char *get_input(void);
@@ -63,35 +64,35 @@ int main(int argc, char **argv) {
 	char opt;
 	while ((opt = getopt_long(argc, argv, "hvpsnl:", opts, NULL)) != -1) {
 		switch (opt) {
-			case 'h':
-				print_usage();
-				return EXIT_SUCCESS;
-			case 'v':
-				printf("%s v%s\n", VIRSH_SS, VIRSH_SS_VERSION);
-				return EXIT_SUCCESS;
-			case 'p':
-				prompt = 1;
-				break;
-			case 's':
-				secret = 1;
-				break;
-			case 'n':
-				newline = 1;
-				break;
-			case 'l': {
-				int32_t speed_input = atoi(optarg);
-				if (speed_input > 15 || speed_input < 1) {
-					fprintf(stderr, "%s: invalid speed value, must be 1-15\n", VIRSH_SS);
-					return EXIT_FAILURE;
-				}
-				speed = speed_input;
-				break;
-			}
-			case '?':
-				fprintf(stderr, "%s: invalid argument\n", VIRSH_SS);
+		case 'h':
+			print_usage();
+			return EXIT_SUCCESS;
+		case 'v':
+			printf("%s v%s\n", VIRSH_SS, VIRSH_SS_VERSION);
+			return EXIT_SUCCESS;
+		case 'p':
+			prompt = 1;
+			break;
+		case 's':
+			secret = 1;
+			break;
+		case 'n':
+			newline = 1;
+			break;
+		case 'l': {
+			int32_t speed_input = atoi(optarg);
+			if (speed_input > 15 || speed_input < 1) {
+				fprintf(stderr, "%s: invalid speed value, must be 1-15\n", VIRSH_SS);
 				return EXIT_FAILURE;
-			default:
-				break;
+			}
+			speed = speed_input;
+			break;
+		}
+		case '?':
+			fprintf(stderr, "%s: invalid argument\n", VIRSH_SS);
+			return EXIT_FAILURE;
+		default:
+			break;
 		}
 	}
 
@@ -114,7 +115,7 @@ int main(int argc, char **argv) {
 	// Verify keys
 	for (uint32_t i = 0; i < strlen(input); i++) {
 		if (!verify_key(input[i])) {
-			fprintf(stderr, "%s: unsupported key -- %c\n", VIRSH_SS, input[i]);
+			fprintf(stderr, "%s: unsupported key -- '%c'\n", VIRSH_SS, input[i]);
 		};
 	}
 
@@ -126,10 +127,7 @@ int main(int argc, char **argv) {
 			uint32_t search = current + 1;
 
 			// Search until speed reached, end of string or different shifting
-			while (search - current < speed &&
-				   search < strlen(input) &&
-				   is_shifted(input[search]) == is_seq_shifted)
-			{
+			while (search - current < speed && search < strlen(input) && is_shifted(input[search]) == is_seq_shifted) {
 				search++;
 			}
 
@@ -325,7 +323,7 @@ int send_keys(char *domain, const char *keys, uint32_t count) {
 
 	// Run
 	int result = run_virsh(args);
-	
+
 	// Cleanup
 	for (uint32_t i = 0; i < count; i++) {
 		free(key_names[i]);
