@@ -1,3 +1,9 @@
+/**
+ * @file main.c
+ * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
+ * @date 2023-2024
+ * @license GPLv3.0
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -45,12 +51,12 @@ static struct option opts[] = {
 
 static char *get_input(void);
 static void print_usage(void);
-static int verify_key(const char c);
-static int send_key(char *domain, const char c);
-static int send_keys(char *domain, const char *c, uint32_t count);
-static int is_shifted(const char c);
-static void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size);
-static int run_virsh(char *const *args);
+static int verify_key(char c);
+static int send_key(char *domain, char c);
+static int send_keys(char *domain, const char *keys, uint32_t count);
+static int is_shifted(char c);
+static void format_key(char c, int shifted, char *buffer, uint32_t buffer_size);
+static int run_virsh(char **args);
 static void exit_handler(int code);
 
 int main(int argc, char **argv) {
@@ -200,16 +206,16 @@ char *get_input(void) {
  */
 void print_usage(void) {
 	printf("usage: %s [options] <domain> <string>\n", VIRSH_SS);
-	printf("\tdomain - libvirt domain name\n");
-	printf("\tstring - string to send (if prompt not set)\n");
+	printf("%10s - %s\n", "domain", "libvirt domain name");
+	printf("%10s - %s\n", "string", "string to send (if prompt not set)");
 	printf("options:\n");
-	printf("\t-h, --help - show usage information\n");
-	printf("\t-v, --version - show program version\n");
-	printf("\t-p, --prompt - ask for string as a prompt\n");
-	printf("\t-s, --secret - prompt input is hidden if used\n");
-	printf("\t-n, --newline - send newline character at the end\n");
-	printf("\t-l, --speed - max amount of characters sent per virsh command (1-15)\n");
-	printf("\t              higher values might cause issues (default: 1)\n");
+	printf("%15s - %s\n", "--help, -h", "show usage information");
+	printf("%15s - %s\n", "--version, -v", "show program version");
+	printf("%15s - %s\n", "--prompt, -p", "ask for a string as a prompt");
+	printf("%15s - %s\n", "--secret, -s", "disable prompt input echo");
+	printf("%15s - %s\n", "--newline, -n", "send a newline character at the end");
+	printf("%15s - %s\n", "--speed, -l", "max amount of characters sent per send-key command (1-15)");
+	printf("%15s - %s\n", "", "higher values might cause issues (default: 1)");
 }
 
 /**
@@ -218,7 +224,7 @@ void print_usage(void) {
  * @param[in] c - Character to check.
  * @return Boolean result.
  */
-int verify_key(const char c) {
+int verify_key(char c) {
 	if (isupper(c) || islower(c)) {
 		return 1;
 	}
@@ -241,7 +247,7 @@ int verify_key(const char c) {
  * @param[in] c - Character to send.
  * @return Exit code.
  */
-int send_key(char *domain, const char c) {
+int send_key(char *domain, char c) {
 	int shifted = is_shifted(c);
 
 	// Make key
@@ -263,16 +269,14 @@ int send_key(char *domain, const char c) {
 		args[4] = NULL;
 	}
 
-	if (DEBUG) {
-		printf("debug: sending command\n");
-		printf("\t%s\n", args[0]);
-		printf("\t%s\n", args[1]);
-		printf("\t%s\n", args[2]);
-		printf("\t%s\n", args[3]);
-		if (shifted) {
-			printf("\t%s\n", args[4]);
-		}
+#if DEBUG == 1
+	printf("debug: sending command\n");
+	char **args_trav = args;
+	while (*args_trav != NULL) {
+		printf("\t%s\n", *args_trav);
+		args_trav++;
 	}
+#endif
 
 	return run_virsh(args);
 }
@@ -281,18 +285,18 @@ int send_key(char *domain, const char c) {
  * @brief Send 'count' keys to a libvirt domain.
  *
  * @param[in] domain - Libvirt domain.
- * @param[in] c - Character array to send.
+ * @param[in] keys - Character array to send.
  * @param[in] count - Amount of characters in 'c'
  * @return [TODO:description]
  */
-int send_keys(char *domain, const char *c, uint32_t count) {
-	int shifted = is_shifted(c[0]);
+int send_keys(char *domain, const char *keys, uint32_t count) {
+	int shifted = is_shifted(keys[0]);
 
 	// Make keys
 	char *key_names[count];
 	for (uint32_t i = 0; i < count; i++) {
 		key_names[i] = malloc(sizeof(char) * 32);
-		format_key(c[i], shifted, key_names[i], 32);
+		format_key(keys[i], shifted, key_names[i], 32);
 	}
 
 	// virsh send-key DOMAIN (KEY_LEFTSHIFT) [KEYS] NULL
@@ -310,12 +314,14 @@ int send_keys(char *domain, const char *c, uint32_t count) {
 	}
 	args[3 + shifted + count] = NULL;
 
-	if (DEBUG) {
-		printf("debug: sending command\n");
-		for (uint32_t i = 0; i < 3 + shifted + count; i++) {
-			printf("\t%s\n", args[i]);
-		}
+#if DEBUG == 1
+	printf("debug: sending command\n");
+	char **args_trav = args;
+	while (*args_trav != NULL) {
+		printf("\t%s\n", *args_trav);
+		args_trav++;
 	}
+#endif
 
 	// Run
 	int result = run_virsh(args);
@@ -334,7 +340,7 @@ int send_keys(char *domain, const char *c, uint32_t count) {
  * @param[in] c - Character to check.
  * @return Boolean result.
  */
-int is_shifted(const char c) {
+int is_shifted(char c) {
 	if (isupper(c)) {
 		return 1;
 	}
@@ -361,7 +367,7 @@ int is_shifted(const char c) {
  * @param[out] buffer - Buffer to fill.
  * @param[in] buffer_size - Size of buffer to fill.
  */
-void format_key(const char c, const int shifted, char *buffer, const uint32_t buffer_size) {
+void format_key(char c, int shifted, char *buffer, uint32_t buffer_size) {
 	// Format normal characters
 	if (isupper(c) || islower(c)) {
 		snprintf(buffer, buffer_size, "KEY_%c", toupper(c));
@@ -388,7 +394,7 @@ void format_key(const char c, const int shifted, char *buffer, const uint32_t bu
  * @param[in] args - Program arguments.
  * @return Exit code.
  */
-int run_virsh(char *const *args) {
+int run_virsh(char **args) {
 	// Fork process
 	pid_t pid = fork();
 	if (pid < 0) {
