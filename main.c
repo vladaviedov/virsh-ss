@@ -33,7 +33,7 @@
 // Name used in print messages
 #define VIRSH_SS "virsh-ss"
 // Software version
-#define VIRSH_SS_VERSION "0.5"
+#define VIRSH_SS_VERSION "0.6"
 // Shift send-key command
 #define SHIFT_CMD "KEY_LEFTSHIFT"
 
@@ -187,6 +187,7 @@ char *get_input(void) {
 		tcsetattr(STDIN_FILENO, 0, &term);
 	}
 
+	// TODO: get rid of readline
 	char *input = readline("input string: ");
 
 	if (secret) {
@@ -421,7 +422,7 @@ int run_virsh(char **args) {
 		close(dev_null);
 
 		execvp(args[0], args);
-		fprintf(stderr, "%s: faioptionsled to exec virsh\n", VIRSH_SS);
+		fprintf(stderr, "%s: failed to exec virsh\n", VIRSH_SS);
 		exit(EXIT_FAILURE);
 	}
 
