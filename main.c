@@ -20,26 +20,28 @@
 
 #include "charmap.h"
 
+// Debug flag
 #ifndef DEBUG
 	#define DEBUG 0
 #endif
 
+// Default virsh binary
+#ifndef VIRSH_BIN
+	#define VIRSH_BIN "virsh"
+#endif
+
+// Name used in print messages
 #define VIRSH_SS "virsh-ss"
+// Software version
 #define VIRSH_SS_VERSION "0.5"
-
-#define VIRSH "virsh"
-#define SEND_KEY "send-key"
-#define SHIFT_KEY "KEY_LEFTSHIFT"
-
-#define DEV_NULL "/dev/null"
-#define INPUT_SIZE 1024
-
-#define DEFAULT_SPEED 1
+// Shift send-key command
+#define SHIFT_CMD "KEY_LEFTSHIFT"
 
 static int prompt = 0;
 static int secret = 0;
 static int newline = 0;
-static uint32_t speed = DEFAULT_SPEED;
+// Default speed
+static uint32_t speed = 1;
 
 static struct option opts[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -55,6 +57,7 @@ static void print_usage(void);
 static int verify_key(char c);
 static int send_key(char *domain, char c);
 static int send_keys(char *domain, const char *keys, uint32_t count);
+static char *get_binary_name(void);
 static int is_shifted(char c);
 static void format_key(char c, int shifted, char *buffer, uint32_t buffer_size);
 static int run_virsh(char **args);
@@ -254,12 +257,12 @@ int send_key(char *domain, char c) {
 
 	// virsh send-key DOMAIN (KEY_LEFTSHIFT) KEY NULL
 	char *args[5 + shifted];
-	args[0] = VIRSH;
-	args[1] = SEND_KEY;
+	args[0] = get_binary_name();
+	args[1] = "send-key";
 	args[2] = domain;
 
 	if (shifted) {
-		args[3] = SHIFT_KEY;
+		args[3] = SHIFT_CMD;
 		args[4] = key_name;
 		args[5] = NULL;
 	} else {
@@ -299,12 +302,12 @@ int send_keys(char *domain, const char *keys, uint32_t count) {
 
 	// virsh send-key DOMAIN (KEY_LEFTSHIFT) [KEYS] NULL
 	char *args[4 + shifted + count];
-	args[0] = VIRSH;
-	args[1] = SEND_KEY;
+	args[0] = get_binary_name();
+	args[1] = "send-key";
 	args[2] = domain;
 
 	if (shifted) {
-		args[3] = SHIFT_KEY;
+		args[3] = SHIFT_CMD;
 	}
 
 	for (uint32_t i = 0; i < count; i++) {
@@ -330,6 +333,16 @@ int send_keys(char *domain, const char *keys, uint32_t count) {
 	}
 
 	return result;
+}
+
+/**
+ * @brief Get virsh binary name.
+ *
+ * @return Binary name (argv0).
+ */
+static char *get_binary_name(void) {
+	char *from_env = getenv("VIRSH");
+	return from_env != NULL ? from_env : VIRSH_BIN;
 }
 
 /**
@@ -403,7 +416,7 @@ int run_virsh(char **args) {
 	// Child code
 	if (pid == 0) {
 		// Redirect output to /dev/null
-		int dev_null = open(DEV_NULL, O_WRONLY);
+		int dev_null = open("/dev/null", O_WRONLY);
 		dup2(dev_null, STDOUT_FILENO);
 		close(dev_null);
 
