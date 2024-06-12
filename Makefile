@@ -1,9 +1,14 @@
+PWD=$(shell pwd)
+BUILD=$(PWD)/build
+
 CC=gcc
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
-LDFLAGS=-lreadline
+LDFLAGS=-L$(BUILD)/lib -lutils -lreadline
 
-BUILD=build
+LIBUTILS_CONFIG=$(PWD)/lib/libutils.conf
+LIBUTILS=$(BUILD)/lib/libutils.a
+
 TARGET_RELEASE=$(BUILD)/virsh-ss
 TARGET_DEBUG=$(BUILD)/virsh-ss-debug
 
@@ -11,10 +16,10 @@ TARGET_DEBUG=$(BUILD)/virsh-ss-debug
 all: release debug
 
 .PHONY: release
-release: $(BUILD) $(TARGET_RELEASE)
+release: $(BUILD) $(LIBUTILS) $(TARGET_RELEASE)
 
 .PHONY: debug
-debug: $(BUILD) $(TARGET_DEBUG)
+debug: $(BUILD) $(LIBUTILS) $(TARGET_DEBUG)
 
 .PHONY: clean
 clean:
@@ -22,6 +27,11 @@ clean:
 
 $(BUILD):
 	mkdir -p $(BUILD)
+
+$(LIBUTILS): lib/c-utils
+	$(MAKE) -C $< \
+		CONFIG_PATH=$(LIBUTILS_CONFIG) \
+		BUILD=$(BUILD)
 
 $(TARGET_RELEASE): main.c charmap.h
 	$(CC) $(CFLAGS_RELEASE) -o $@ $< $(LDFLAGS)
