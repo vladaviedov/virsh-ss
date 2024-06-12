@@ -34,7 +34,7 @@
 // Name used in print messages
 #define VIRSH_SS "virsh-ss"
 // Software version
-#define VIRSH_SS_VERSION "0.6"
+#define VIRSH_SS_VERSION "0.7"
 // Shift send-key command
 #define SHIFT_CMD "KEY_LEFTSHIFT"
 
@@ -55,6 +55,7 @@ static struct option opts[] = {
 
 static char *get_input(void);
 static void print_usage(void);
+static void print_version(void);
 static int verify_key(char c);
 static int send_key(char *domain, char c);
 static int send_keys(char *domain, const char *keys, uint32_t count);
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
 			print_usage();
 			return EXIT_SUCCESS;
 		case 'v':
-			printf("%s v%s\n", VIRSH_SS, VIRSH_SS_VERSION);
+			print_version();
 			return EXIT_SUCCESS;
 		case 'p':
 			prompt = 1;
@@ -254,6 +255,14 @@ void print_usage(void) {
 	printf("%15s - %s\n", "--speed, -l",
 		"max amount of characters sent per send-key command (1-15)");
 	printf("%15s - %s\n", "", "higher values might cause issues (default: 1)");
+}
+
+/**
+ * @brief Print version information.
+ */
+static void print_version(void) {
+	printf("[bin] %20s - version %s\n", "Virsh Send String",  VIRSH_SS_VERSION);
+	printf("[lib] %20s - version %s\n", "Nanorl", NRL_LIB_VER);
 }
 
 /**
