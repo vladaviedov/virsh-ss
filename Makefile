@@ -2,9 +2,10 @@ PWD=$(shell pwd)
 BUILD=$(PWD)/build
 
 CC=gcc
-CFLAGS_RELEASE=-O2
-CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
-LDFLAGS=-L$(BUILD)/lib -lutils -lreadline
+CFLAGS=-I$(BUILD)/include -std=c99
+CFLAGS_RELEASE=$(CFLAGS) -O2
+CFLAGS_DEBUG=$(CFLAGS) -Wall -Wextra -g -DDEBUG=1
+LDFLAGS=-L$(BUILD)/lib -lutils
 
 LIBUTILS_CONFIG=$(PWD)/lib/libutils.conf
 LIBUTILS=$(BUILD)/lib/libutils.a

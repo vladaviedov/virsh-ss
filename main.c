@@ -5,6 +5,7 @@
  * @license GPLv3.0
  */
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <signal.h>
@@ -16,18 +17,18 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include <readline/readline.h>
+#include <c-utils/nanorl.h>
 
 #include "charmap.h"
 
 // Debug flag
 #ifndef DEBUG
-	#define DEBUG 0
+#define DEBUG 0
 #endif
 
 // Default virsh binary
 #ifndef VIRSH_BIN
-	#define VIRSH_BIN "virsh"
+#define VIRSH_BIN "virsh"
 #endif
 
 // Name used in print messages
@@ -44,12 +45,12 @@ static int newline = 0;
 static uint32_t speed = 1;
 
 static struct option opts[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"prompt", no_argument, NULL, 'p'},
-	{"secret", no_argument, NULL, 's'},
-	{"newline", no_argument, NULL, 'n'},
-	{"speed", required_argument, NULL, 'l'},
+	{ "help", no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'v' },
+	{ "prompt", no_argument, NULL, 'p' },
+	{ "secret", no_argument, NULL, 's' },
+	{ "newline", no_argument, NULL, 'n' },
+	{ "speed", required_argument, NULL, 'l' },
 };
 
 static char *get_input(void);
@@ -62,6 +63,7 @@ static int is_shifted(char c);
 static void format_key(char c, int shifted, char *buffer, uint32_t buffer_size);
 static int run_virsh(char **args);
 static void exit_handler(int code);
+static void dispose(char *buffer);
 
 int main(int argc, char **argv) {
 	char opt;
@@ -85,7 +87,8 @@ int main(int argc, char **argv) {
 		case 'l': {
 			int32_t speed_input = atoi(optarg);
 			if (speed_input > 15 || speed_input < 1) {
-				fprintf(stderr, "%s: invalid speed value, must be 1-15\n", VIRSH_SS);
+				fprintf(stderr, "%s: invalid speed value, must be 1-15\n",
+					VIRSH_SS);
 				return EXIT_FAILURE;
 			}
 			speed = speed_input;
@@ -118,7 +121,8 @@ int main(int argc, char **argv) {
 	// Verify keys
 	for (uint32_t i = 0; i < strlen(input); i++) {
 		if (!verify_key(input[i])) {
-			fprintf(stderr, "%s: unsupported key -- '%c'\n", VIRSH_SS, input[i]);
+			fprintf(
+				stderr, "%s: unsupported key -- '%c'\n", VIRSH_SS, input[i]);
 		};
 	}
 
@@ -130,15 +134,22 @@ int main(int argc, char **argv) {
 			uint32_t search = current + 1;
 
 			// Search until speed reached, end of string or different shifting
-			while (search - current < speed && search < strlen(input) && is_shifted(input[search]) == is_seq_shifted) {
+			while (search - current < speed && search < strlen(input)
+				   && is_shifted(input[search]) == is_seq_shifted) {
 				search++;
 			}
 
 			// Characters start at index current, end at difference
-			if (send_keys(domain, input + current, search - current) != EXIT_SUCCESS) {
+			if (send_keys(domain, input + current, search - current)
+				!= EXIT_SUCCESS) {
 				fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
 				if (current > 0) {
-					fprintf(stderr, "warning: %u keys have been sent\n", current);
+					fprintf(
+						stderr, "warning: %u keys have been sent\n", current);
+				}
+
+				if (prompt) {
+					dispose(input);
 				}
 				return EXIT_FAILURE;
 			}
@@ -154,6 +165,10 @@ int main(int argc, char **argv) {
 				if (i > 0) {
 					fprintf(stderr, "warning: %u keys have been sent\n", i);
 				}
+
+				if (prompt) {
+					dispose(input);
+				}
 				return EXIT_FAILURE;
 			}
 		}
@@ -163,14 +178,17 @@ int main(int argc, char **argv) {
 		if (send_key(domain, '\n') != EXIT_SUCCESS) {
 			fprintf(stderr, "%s: failed to send newline\n", VIRSH_SS);
 			fprintf(stderr, "warning: string was sent\n");
+
+			if (prompt) {
+				dispose(input);
+			}
 			return EXIT_FAILURE;
 		}
 	}
 
 	if (prompt) {
-		free(input);
+		dispose(input);
 	}
-
 	return EXIT_SUCCESS;
 }
 
@@ -180,24 +198,40 @@ int main(int argc, char **argv) {
  * @return Input string (must be freed).
  */
 char *get_input(void) {
-	struct termios term;
-	if (secret) {
-		tcgetattr(STDIN_FILENO, &term);
-		term.c_lflag &= ~ECHO;
-		tcsetattr(STDIN_FILENO, 0, &term);
-	}
-
-	// TODO: get rid of readline
-	char *input = readline("input string: ");
+	char *input;
+	nrl_error err;
 
 	if (secret) {
-		term.c_lflag |= ECHO;
-		tcsetattr(STDIN_FILENO, 0, &term);
+		// Ensure that read is from the terminal
+		int tty_fd = open("/dev/tty", O_RDWR);
+		if (tty_fd < 0) {
+			fprintf(stderr, "%s: failed to open /dev/tty: %s\n", VIRSH_SS,
+				strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		nrl_opts opts = {
+			.fd = tty_fd,
+			.prompt = "input string: ",
+			.echo = NRL_ECHO_FAKE,
+			.echo_repl = '*',
+		};
+
+		input = nanorl_opts(&opts, &err);
+		close(tty_fd);
+	} else {
+		// Doesn't matter in this case
+		input = nanorl("input string: ", &err);
 	}
 
-	if (!input) {
-		fprintf(stderr, "%s: no input was given\n", VIRSH_SS);
-		exit(EXIT_FAILURE);
+	if (input == NULL) {
+		if (err == NRL_ERR_EMPTY) {
+			fprintf(stderr, "%s: no input was given\n", VIRSH_SS);
+			exit(EXIT_FAILURE);
+		} else {
+			fprintf(stderr, "%s: failed to read input\n", VIRSH_SS);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	return input;
@@ -215,12 +249,15 @@ void print_usage(void) {
 	printf("%15s - %s\n", "--version, -v", "show program version");
 	printf("%15s - %s\n", "--prompt, -p", "ask for a string as a prompt");
 	printf("%15s - %s\n", "--secret, -s", "disable prompt input echo");
-	printf("%15s - %s\n", "--newline, -n", "send a newline character at the end");
-	printf("%15s - %s\n", "--speed, -l", "max amount of characters sent per send-key command (1-15)");
+	printf(
+		"%15s - %s\n", "--newline, -n", "send a newline character at the end");
+	printf("%15s - %s\n", "--speed, -l",
+		"max amount of characters sent per send-key command (1-15)");
 	printf("%15s - %s\n", "", "higher values might cause issues (default: 1)");
 }
 
 /**
+ *
  * @brief Verify that we can send this key.
  *
  * @param[in] c - Character to check.
@@ -391,7 +428,8 @@ void format_key(char c, int shifted, char *buffer, uint32_t buffer_size) {
 	for (uint32_t i = 0; i < MISC_KEY_COUNT; i++) {
 		const kb_key *entry = misc_keys + i;
 
-		if ((!shifted && c == entry->unshifted) || (shifted && c == entry->shifted)) {
+		if ((!shifted && c == entry->unshifted)
+			|| (shifted && c == entry->shifted)) {
 			formatted = entry->formatted;
 			break;
 		}
@@ -446,4 +484,17 @@ void exit_handler(int code) {
 	}
 
 	exit(code);
+}
+
+/**
+ * @brief Free buffer, erasing data if secret flag is on.
+ *
+ * @param[in] buffer - String to delete.
+ */
+static void dispose(char *buffer) {
+	if (secret) {
+		memset(buffer, 0, strlen(buffer));
+	}
+
+	free(buffer);
 }
