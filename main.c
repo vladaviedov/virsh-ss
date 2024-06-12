@@ -1,6 +1,7 @@
 /**
  * @file main.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
+ * @version 0.7
  * @date 2023-2024
  * @license GPLv3.0
  */
@@ -261,8 +262,15 @@ void print_usage(void) {
  * @brief Print version information.
  */
 static void print_version(void) {
-	printf("[bin] %20s - version %s\n", "Virsh Send String",  VIRSH_SS_VERSION);
-	printf("[lib] %20s - version %s\n", "Nanorl", NRL_LIB_VER);
+	printf("%-17s - version %s\n", "Virsh Send String",  VIRSH_SS_VERSION);
+	printf("%-17s - version %s\n", "Nanorl (lib)", NRL_LIB_VER);
+
+	printf("\nCopyright (C) 2024 Vladyslav Aviedov\n");
+	printf("This program is free software released under the GNU GPLv3\n");
+
+#if DEBUG == 1
+	printf("\nDebug Build\n");
+#endif
 }
 
 /**

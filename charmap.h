@@ -1,6 +1,7 @@
 /**
  * @file charmap.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
+ * @version 0.7
  * @date 2023-2024
  * @license GPLv3.0
  * @brief Mappings for non-alpha key characters.

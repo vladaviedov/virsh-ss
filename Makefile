@@ -3,24 +3,27 @@ BUILD=$(PWD)/build
 
 CC=gcc
 CFLAGS=-I$(BUILD)/include -std=c99
-CFLAGS_RELEASE=$(CFLAGS) -O2
-CFLAGS_DEBUG=$(CFLAGS) -Wall -Wextra -g -DDEBUG=1
+CFLAGS_RELEASE=-O2
+CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
 LDFLAGS=-L$(BUILD)/lib -lutils
 
 LIBUTILS_CONFIG=$(PWD)/lib/libutils.conf
 LIBUTILS=$(BUILD)/lib/libutils.a
 
-TARGET_RELEASE=$(BUILD)/virsh-ss
-TARGET_DEBUG=$(BUILD)/virsh-ss-debug
-
-.PHONY: all
-all: release debug
-
-.PHONY: release
-release: $(BUILD) $(LIBUTILS) $(TARGET_RELEASE)
+TARGET=$(BUILD)/bin/virsh-ss
 
 .PHONY: debug
-debug: $(BUILD) $(LIBUTILS) $(TARGET_DEBUG)
+debug: TASK=debug
+debug: CFLAGS += $(CFLAGS_DEBUG)
+debug: build
+
+.PHONY: release
+release: TASK=release
+release: CFLAGS += $(CFLAGS_RELEASE)
+release: build
+
+.PHONY: build
+build: $(BUILD) $(LIBUTILS) $(TARGET)
 
 .PHONY: clean
 clean:
@@ -30,15 +33,12 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 $(LIBUTILS): lib/c-utils
-	$(MAKE) -C $< \
+	$(MAKE) -C $< $(TASK) \
 		CONFIG_PATH=$(LIBUTILS_CONFIG) \
 		BUILD=$(BUILD)
 
-$(TARGET_RELEASE): main.c charmap.h
-	$(CC) $(CFLAGS_RELEASE) -o $@ $< $(LDFLAGS)
-
-$(TARGET_DEBUG): main.c charmap.h
-	$(CC) $(CFLAGS_DEBUG) -o $@ $< $(LDFLAGS)
+$(TARGET): main.c charmap.h
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # Formatting
 FORMAT=clang-format
