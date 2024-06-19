@@ -37,7 +37,7 @@ $(LIBUTILS): lib/c-utils
 		CONFIG_PATH=$(LIBUTILS_CONFIG) \
 		BUILD=$(BUILD)
 
-$(TARGET): main.c charmap.h
+$(TARGET): src/main.c src/charmap.h
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # Formatting
@@ -45,7 +45,7 @@ FORMAT=clang-format
 FORMAT_CHECK_FLAGS=--dry-run --Werror
 FORMAT_FIX_FLAGS=-i
 
-FORMAT_FILES=main.c charmap.h
+FORMAT_FILES=src/main.c src/charmap.h
 
 .PHONY: checkformat
 checkformat:

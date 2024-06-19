@@ -262,7 +262,7 @@ void print_usage(void) {
  * @brief Print version information.
  */
 static void print_version(void) {
-	printf("%-17s - version %s\n", "Virsh Send String",  VIRSH_SS_VERSION);
+	printf("%-17s - version %s\n", "Virsh Send String", VIRSH_SS_VERSION);
 	printf("%-17s - version %s\n", "Nanorl (lib)", NRL_LIB_VER);
 
 	printf("\nCopyright (C) 2024 Vladyslav Aviedov\n");
