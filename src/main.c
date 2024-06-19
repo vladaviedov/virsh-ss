@@ -243,10 +243,10 @@ char *get_input(void) {
  * @brief Print usage information.
  */
 void print_usage(void) {
-	printf("usage: %s [options] <domain> <string>\n", VIRSH_SS);
+	printf("Usage: %s <domain> <string> [options]\n", VIRSH_SS);
 	printf("%10s - %s\n", "domain", "libvirt domain name");
 	printf("%10s - %s\n", "string", "string to send (if prompt not set)");
-	printf("options:\n");
+	printf("\nOptions:\n");
 	printf("%15s - %s\n", "--help, -h", "show usage information");
 	printf("%15s - %s\n", "--version, -v", "show program version");
 	printf("%15s - %s\n", "--prompt, -p", "ask for a string as a prompt");
