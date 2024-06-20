@@ -1,0 +1,57 @@
+.TH VIRSH-SS 1 "June 2024"
+.SH NAME
+virsh-ss \- Send string to libvirt virtual machine
+.SH SYNOPSIS
+.nf
+\fBvirsh-ss\fP \fIdomain string\fP [options]
+\fBvirsh-ss\fP \fIdomain\fP -p [options]
+.fi
+.SH DESCRIPTION
+\fBvirsh-ss\fP is a wrapper for the \fBvirsh send-key\fP command which allows
+sending ASCII strings, rather than symbolic character names.
+.SH OPTIONS
+.TP
+\fB-h, --help\fP
+Show usage information.
+.TP
+\fB-v, --version\fP
+Print program and library version.
+.TP
+\fB-p, --prompt\fP
+Get input string from standard input rather than command line arguments.
+.TP
+\fB-s, --secret\fP
+Treat prompt input as sensitive data (input obfuscated and zeroed).
+Must be used together with \fB-p\.
+.TP
+\fB-n, --newline\fP
+Send a newline character after all input is sent.
+.TP
+\fB-l, --speed\fP
+Maximum characters sent in a single \fBvirsh\fP command.
+Increasing this parameter will improve performance but might cause instability.
+Default value: 1. Maximum value: 15.
+.SH ENVIRONMENT
+.TP
+\fBVIRSH\fP
+Overrides \fBvirsh\fP binary name.
+.SH EXAMPLES
+.TP
+Unlocking a LUKS encrypted VM without using the GUI.
+\fBvirsh-ss\fP \fIdomain\fP -psn
+.SH "BUG REPORTS"
+Issue tracker: <https://github.com/vladaviedov/virsh-ss/issues>
+.sp 1
+If you are unable to use the issue tracker, you may mail reports to
+<bugs at vladaviedov dot org>
+.SH COPYRIGHT
+Copyright (C) 2024 Vladyslav Aviedov
+.SH LICENSE
+\fBvirsh-ss\fP is distributed under the terms of the GNU GPL v3.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+.SH "SEE ALSO"
+.nf
+\fBvirsh(1)\fP
+<https://github.com/vladaviedov/virsh-ss>
+.fi
