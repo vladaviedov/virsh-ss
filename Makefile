@@ -1,5 +1,6 @@
 PWD=$(shell pwd)
 BUILD=$(PWD)/build
+MAN_DIR=$(BUILD)/share/man/man1
 
 CC=gcc
 CFLAGS=-I$(BUILD)/include -std=c99
@@ -11,19 +12,31 @@ LIBUTILS_CONFIG=$(PWD)/lib/libutils.conf
 LIBUTILS=$(BUILD)/lib/libutils.a
 
 TARGET=$(BUILD)/bin/virsh-ss
-
-.PHONY: debug
-debug: TASK=debug
-debug: CFLAGS += $(CFLAGS_DEBUG)
-debug: build
+MAN_TARGET=$(MAN_DIR)/virsh-ss.1.gz
+PREFIX?=/usr
 
 .PHONY: release
 release: TASK=release
-release: CFLAGS += $(CFLAGS_RELEASE)
+release: CFLAGS+=$(CFLAGS_RELEASE)
 release: build
+
+.PHONY: debug
+debug: TASK=debug
+debug: CFLAGS+=$(CFLAGS_DEBUG)
+debug: build
+
+.PHONY: install
+install: $(BUILD)/share/man/man1/virsh-ss.1.gz
+	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
+	cp $(TARGET) $(PREFIX)/bin
+	cp $(MAN_TARGET) $(PREFIX)/share/man/man1
 
 .PHONY: build
 build: $(BUILD) $(LIBUTILS) $(TARGET)
+
+$(MAN_TARGET): $(PWD)/doc/virsh-ss.man
+	mkdir -p $(MAN_DIR)
+	gzip -c $< > $(MAN_TARGET)
 
 .PHONY: clean
 clean:
