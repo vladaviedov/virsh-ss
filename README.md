@@ -1,10 +1,24 @@
 # virsh-ss
 
-`virsh send-key` wrapper for quickly sending full strings to libvirt virtual machines.
+`virsh send-key` wrapper for quickly sending full strings to libvirt virtual
+machines.
+
+## Requirements
+
+- C99-capable tool chain.
+- GNU make.
+- `gzip` (for `make install`).
+- `virsh` (for runtime).
 
 ## Build
+```
+make && make install
+```
+
+### Development
+
+- `make release` - Build release binary (same as `make`).
 - `make debug` - Build debug binary.
-- `make release` - Build release binary.
 - `make clean` - Remove build files.
 
 ### Configuration
@@ -13,7 +27,14 @@
 |---|---|---|
 |`VIRSH_BIN`|Name of the system default virsh binary|`virsh`|
 
+## Install
+
+`make install` will install the program using in the `/usr/` prefix.
+If you wish to change the install location pass a custom `PREFIX` to
+`make install`
+
 ## Usage
+
 `virsh-ss <domain> <string> [options]`
 - domain: libvirt domain name
 - string: string of characters to send (if prompt not set)
@@ -32,6 +53,7 @@ Environment Variables:
 ## Examples
 
 ### Unlocking Encrypted VM
+
 Unlock a LUKS encrypted VM without using a GUI:
 1. Run the command `virsh-ss --prompt --secret --newline DOMAIN`
 2. Input luks password
