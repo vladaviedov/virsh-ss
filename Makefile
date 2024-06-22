@@ -12,7 +12,7 @@ LIBUTILS_CONFIG=$(PWD)/lib/libutils.conf
 LIBUTILS=$(BUILD)/lib/libutils.a
 
 TARGET=$(BUILD)/bin/virsh-ss
-MAN_TARGET=$(MAN_DIR)/virsh-ss.1.gz
+MAN_PAGE=$(PWD)/doc/virsh-ss.man
 PREFIX?=/usr
 
 .PHONY: release
@@ -26,17 +26,13 @@ debug: CFLAGS+=$(CFLAGS_DEBUG)
 debug: build
 
 .PHONY: install
-install: $(BUILD)/share/man/man1/virsh-ss.1.gz
+install:
 	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
 	cp $(TARGET) $(PREFIX)/bin
-	cp $(MAN_TARGET) $(PREFIX)/share/man/man1
+	gzip -c $(MAN_PAGE) > $(PREFIX)/share/man/man1/virsh-ss.1.gz
 
 .PHONY: build
 build: $(BUILD) $(LIBUTILS) $(TARGET)
-
-$(MAN_TARGET): $(PWD)/doc/virsh-ss.man
-	mkdir -p $(MAN_DIR)
-	gzip -c $< > $(MAN_TARGET)
 
 .PHONY: clean
 clean:

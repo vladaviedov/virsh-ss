@@ -1,7 +1,7 @@
 /**
  * @file charmap.h
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 0.7
+ * @version 1.0
  * @date 2023-2024
  * @license GPLv3.0
  * @brief Mappings for non-alpha key characters.
@@ -15,7 +15,7 @@ typedef struct {
 } kb_key;
 
 #define MISC_KEY_COUNT (sizeof(misc_keys) / sizeof(misc_keys[0]))
-static const kb_key misc_keys[] = {
+const kb_key misc_keys[] = {
 	{ '`', '~', "KEY_GRAVE" },
 	{ '1', '!', "KEY_1" },
 	{ '2', '@', "KEY_2" },

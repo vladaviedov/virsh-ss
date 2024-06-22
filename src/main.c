@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 0.7
+ * @version 1.0
  * @date 2023-2024
  * @license GPLv3.0
  */
@@ -35,7 +35,7 @@
 // Name used in print messages
 #define VIRSH_SS "virsh-ss"
 // Software version
-#define VIRSH_SS_VERSION "0.7"
+#define VIRSH_SS_VERSION "1.0"
 // Shift send-key command
 #define SHIFT_CMD "KEY_LEFTSHIFT"
 
@@ -343,7 +343,7 @@ int send_key(char *domain, char c) {
  * @param[in] domain - Libvirt domain.
  * @param[in] keys - Character array to send.
  * @param[in] count - Amount of characters in 'c'
- * @return [TODO:description]
+ * @return Exit code of 'virsh' command.
  */
 int send_keys(char *domain, const char *keys, uint32_t count) {
 	int shifted = is_shifted(keys[0]);
