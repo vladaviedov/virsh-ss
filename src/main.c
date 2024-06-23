@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0
+ * @version 1.0.0
  * @date 2023-2024
  * @license GPLv3.0
  */
@@ -35,7 +35,7 @@
 // Name used in print messages
 #define VIRSH_SS "virsh-ss"
 // Software version
-#define VIRSH_SS_VERSION "1.0"
+#define VIRSH_SS_VERSION "1.0.0"
 // Shift send-key command
 #define SHIFT_CMD "KEY_LEFTSHIFT"
 
