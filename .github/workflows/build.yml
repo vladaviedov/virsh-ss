@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  linux-build:
+    name: Linux Build
+    strategy:
+      matrix:
+        cc: [ gcc, clang ]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: build
+        run: |
+          make clean debug CC=${{ matrix.cc }}
+          make clean release CC=${{ matrix.cc }}
+
+  macos-build:
+    name: MacOS Build
+    strategy:
+      matrix:
+        cc: [ gcc-13, clang ]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: build
+        run: |
+          make clean debug CC=${{ matrix.cc }}
+          make clean release CC=${{ matrix.cc }}
+
+  freebsd-build:
+    name: FreeBSD Build
+    strategy:
+      matrix:
+        cc: [ gcc13, clang ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y gcc13 gmake
+          run: |
+            gmake clean debug CC=${{ matrix.cc }}
+            gmake clean release CC=${{ matrix.cc }}

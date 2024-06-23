@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
  *
  * @return Input string (must be freed).
  */
-char *get_input(void) {
+static char *get_input(void) {
 	char *input;
 	nrl_error err;
 
@@ -242,7 +242,7 @@ char *get_input(void) {
 /**
  * @brief Print usage information.
  */
-void print_usage(void) {
+static void print_usage(void) {
 	printf("Usage: %s <domain> <string> [options]\n", VIRSH_SS);
 	printf("%10s - %s\n", "domain", "libvirt domain name");
 	printf("%10s - %s\n", "string", "string to send (if prompt not set)");
@@ -280,7 +280,7 @@ static void print_version(void) {
  * @param[in] c - Character to check.
  * @return Boolean result.
  */
-int verify_key(char c) {
+static int verify_key(char c) {
 	if (isupper(c) || islower(c)) {
 		return 1;
 	}
@@ -303,7 +303,7 @@ int verify_key(char c) {
  * @param[in] c - Character to send.
  * @return Exit code.
  */
-int send_key(char *domain, char c) {
+static int send_key(char *domain, char c) {
 	int shifted = is_shifted(c);
 
 	// Make key
@@ -345,7 +345,7 @@ int send_key(char *domain, char c) {
  * @param[in] count - Amount of characters in 'c'
  * @return Exit code of 'virsh' command.
  */
-int send_keys(char *domain, const char *keys, uint32_t count) {
+static int send_keys(char *domain, const char *keys, uint32_t count) {
 	int shifted = is_shifted(keys[0]);
 
 	// Make keys
@@ -406,7 +406,7 @@ static char *get_binary_name(void) {
  * @param[in] c - Character to check.
  * @return Boolean result.
  */
-int is_shifted(char c) {
+static int is_shifted(char c) {
 	if (isupper(c)) {
 		return 1;
 	}
@@ -433,7 +433,8 @@ int is_shifted(char c) {
  * @param[out] buffer - Buffer to fill.
  * @param[in] buffer_size - Size of buffer to fill.
  */
-void format_key(char c, int shifted, char *buffer, uint32_t buffer_size) {
+static void format_key(
+	char c, int shifted, char *buffer, uint32_t buffer_size) {
 	// Format normal characters
 	if (isupper(c) || islower(c)) {
 		snprintf(buffer, buffer_size, "KEY_%c", toupper(c));
@@ -461,7 +462,7 @@ void format_key(char c, int shifted, char *buffer, uint32_t buffer_size) {
  * @param[in] args - Program arguments.
  * @return Exit code.
  */
-int run_virsh(char **args) {
+static int run_virsh(char **args) {
 	// Fork process
 	pid_t pid = fork();
 	if (pid < 0) {
@@ -492,7 +493,7 @@ int run_virsh(char **args) {
  *
  * @param[in] code - Exit code.
  */
-void exit_handler(int code) {
+static void exit_handler(int code) {
 	if (secret) {
 		struct termios term;
 		tcgetattr(STDIN_FILENO, &term);
