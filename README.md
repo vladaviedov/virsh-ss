@@ -27,6 +27,8 @@ make && make install
 |---|---|---|
 |`VIRSH_BIN`|Name of the system default virsh binary|`virsh`|
 
+Also, [nanorl](https://github.com/vladaviedov/c-utils/blob/master/nanorl/README.md) has configuration options.
+
 ## Install
 
 `make install` will install the program using in the `/usr/` prefix.
