@@ -1,3 +1,3 @@
 [submodule "lib/c-utils"]
 	path = lib/c-utils
-	url = git@github.com:vladaviedov/c-utils.git
+	url = https://github.com/vladaviedov/c-utils.git

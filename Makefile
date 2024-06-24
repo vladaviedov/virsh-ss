@@ -32,7 +32,7 @@ install:
 	gzip -c $(MAN_PAGE) > $(PREFIX)/share/man/man1/virsh-ss.1.gz
 
 .PHONY: build
-build: $(BUILD) $(LIBUTILS) $(TARGET)
+build: $(BUILD) $(TARGET)
 
 .PHONY: clean
 clean:
@@ -46,7 +46,7 @@ $(LIBUTILS): lib/c-utils
 		CONFIG_PATH=$(LIBUTILS_CONFIG) \
 		BUILD=$(BUILD)
 
-$(TARGET): src/main.c src/charmap.h
+$(TARGET): src/main.c src/charmap.h $(LIBUTILS)
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # Formatting
