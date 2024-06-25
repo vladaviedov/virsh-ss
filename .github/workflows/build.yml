@@ -17,6 +17,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+        # Github is broken
+      - name: Submodule Tags
+        run: |
+          cd lib/c-utils
+          git fetch --tags 
       - name: build
         run: |
           make clean debug CC=${{ matrix.cc }}
@@ -32,6 +37,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Submodule Tags
+        run: |
+          cd lib/c-utils
+          git fetch --tags 
       - name: build
         run: |
           make clean debug CC=${{ matrix.cc }}
@@ -47,11 +56,15 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Submodule Tags
+        run: |
+          cd lib/c-utils
+          git fetch --tags 
       - uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
           prepare: |
-            pkg install -y gcc13 gmake
+            pkg install -y gcc13 gmake git
           run: |
             gmake clean debug CC=${{ matrix.cc }}
             gmake clean release CC=${{ matrix.cc }}

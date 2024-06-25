@@ -1,3 +1,4 @@
 [submodule "lib/c-utils"]
 	path = lib/c-utils
 	url = https://github.com/vladaviedov/c-utils.git
+	ignore = dirty

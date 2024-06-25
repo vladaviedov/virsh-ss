@@ -42,6 +42,7 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 $(LIBUTILS): lib/c-utils
+	$</version.sh nanorl 1.2
 	$(MAKE) -C $< $(TASK) \
 		CONFIG_PATH=$(LIBUTILS_CONFIG) \
 		BUILD=$(BUILD)
