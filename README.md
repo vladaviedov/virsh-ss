@@ -12,6 +12,7 @@ machines.
 
 ## Build
 ```
+git submodule update --init
 make && make install
 ```
 
