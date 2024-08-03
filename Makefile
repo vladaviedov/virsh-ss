@@ -8,6 +8,10 @@ CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
 LDFLAGS=-L$(BUILD)/lib -lutils
 
+BUILD_DIRS=$(BUILD) \
+		   $(BUILD)/lib \
+		   $(BUILD)/bin
+
 LIBUTILS_CONFIG=$(PWD)/lib/libutils.conf
 LIBUTILS=$(BUILD)/lib/libutils.a
 
@@ -25,6 +29,16 @@ debug: TASK=debug
 debug: CFLAGS+=$(CFLAGS_DEBUG)
 debug: build
 
+# make_build_dir(dir_name)
+define make_build_dir
+$(1):
+	mkdir -p $$@
+endef
+
+# Build directory rules
+$(foreach build_dir, $(BUILD_DIRS), \
+	$(eval $(call make_build_dir,$(build_dir))))
+
 .PHONY: install
 install:
 	mkdir -p $(PREFIX)/bin $(PREFIX)/share/man/man1
@@ -32,14 +46,11 @@ install:
 	gzip -c $(MAN_PAGE) > $(PREFIX)/share/man/man1/virsh-ss.1.gz
 
 .PHONY: build
-build: $(BUILD) $(TARGET)
+build: $(BUILD_DIRS) $(TARGET)
 
 .PHONY: clean
 clean:
 	rm -rf $(BUILD)
-
-$(BUILD):
-	mkdir -p $(BUILD)
 
 $(LIBUTILS): lib/c-utils
 	$</version.sh nanorl 1.2
