@@ -52,8 +52,9 @@ build: $(BUILD_DIRS) $(TARGET)
 clean:
 	rm -rf $(BUILD)
 
+.PHONY: $(LIBUTILS)
 $(LIBUTILS): lib/c-utils
-	$</version.sh nanorl 1.2
+	$</version.sh nanorl 1.2r
 	$(MAKE) -C $< $(TASK) \
 		CONFIG_PATH=$(LIBUTILS_CONFIG) \
 		BUILD=$(BUILD)
