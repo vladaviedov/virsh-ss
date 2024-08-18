@@ -32,10 +32,13 @@
 #define VIRSH_BIN "virsh"
 #endif
 
+// Fallback version number
+#ifndef VIRSH_SS_VERSION
+#define VIRSH_SS_VERSION "1.0.0"
+#endif
+
 // Name used in print messages
 #define VIRSH_SS "virsh-ss"
-// Software version
-#define VIRSH_SS_VERSION "1.0.0"
 // Shift send-key command
 #define SHIFT_CMD "KEY_LEFTSHIFT"
 
@@ -262,15 +265,10 @@ static void print_usage(void) {
  * @brief Print version information.
  */
 static void print_version(void) {
-	printf("%-17s - version %s\n", "Virsh Send String", VIRSH_SS_VERSION);
-	printf("%-17s - version %s\n", "Nanorl (lib)", NRL_LIB_VER);
+	printf("virsh-ss version %s\n", VIRSH_SS_VERSION);
 
 	printf("\nCopyright (C) 2024 Vladyslav Aviedov\n");
 	printf("This program is free software released under the GNU GPLv3\n");
-
-#if DEBUG == 1
-	printf("\nDebug Build\n");
-#endif
 }
 
 /**

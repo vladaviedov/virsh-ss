@@ -1,9 +1,10 @@
 PWD=$(shell pwd)
 BUILD=$(PWD)/build
 MAN_DIR=$(BUILD)/share/man/man1
+VERSION='"$(shell git describe --tags --dirty)"'
 
 CC=gcc
-CFLAGS=-I$(BUILD)/include -std=c99
+CFLAGS=-I$(BUILD)/include -std=c99 -DVIRSH_SS_VERSION=$(VERSION)
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
 LDFLAGS=-L$(BUILD)/lib -lutils
