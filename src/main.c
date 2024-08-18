@@ -37,10 +37,10 @@
 #define VIRSH_SS_VERSION "1.0.0"
 #endif
 
-// Name used in print messages
-#define VIRSH_SS "virsh-ss"
 // Shift send-key command
 #define SHIFT_CMD "KEY_LEFTSHIFT"
+
+static const char *argv0;
 
 static int prompt = 0;
 static int secret = 0;
@@ -71,6 +71,8 @@ static void exit_handler(int code);
 static void dispose(char *buffer);
 
 int main(int argc, char **argv) {
+	argv0 = argv[0];
+
 	char opt;
 	while ((opt = getopt_long(argc, argv, "hvpsnl:", opts, NULL)) != -1) {
 		switch (opt) {
@@ -92,15 +94,15 @@ int main(int argc, char **argv) {
 		case 'l': {
 			int32_t speed_input = atoi(optarg);
 			if (speed_input > 15 || speed_input < 1) {
-				fprintf(stderr, "%s: invalid speed value, must be 1-15\n",
-					VIRSH_SS);
+				fprintf(
+					stderr, "%s: invalid speed value, must be 1-15\n", argv0);
 				return EXIT_FAILURE;
 			}
 			speed = speed_input;
 			break;
 		}
 		case '?':
-			fprintf(stderr, "%s: invalid argument\n", VIRSH_SS);
+			fprintf(stderr, "%s: invalid argument\n", argv0);
 			return EXIT_FAILURE;
 		default:
 			break;
@@ -110,7 +112,7 @@ int main(int argc, char **argv) {
 	// Check arg count: 1 if prompt, 2 if not prompt
 	uint32_t arg_count = argc - optind;
 	if ((prompt && arg_count != 1) || (!prompt && arg_count != 2)) {
-		fprintf(stderr, "%s: invalid arguments\n", VIRSH_SS);
+		fprintf(stderr, "%s: invalid arguments\n", argv0);
 		print_usage();
 		return EXIT_FAILURE;
 	}
@@ -126,8 +128,7 @@ int main(int argc, char **argv) {
 	// Verify keys
 	for (uint32_t i = 0; i < strlen(input); i++) {
 		if (!verify_key(input[i])) {
-			fprintf(
-				stderr, "%s: unsupported key -- '%c'\n", VIRSH_SS, input[i]);
+			fprintf(stderr, "%s: unsupported key -- '%c'\n", argv0, input[i]);
 		};
 	}
 
@@ -147,7 +148,7 @@ int main(int argc, char **argv) {
 			// Characters start at index current, end at difference
 			if (send_keys(domain, input + current, search - current)
 				!= EXIT_SUCCESS) {
-				fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
+				fprintf(stderr, "%s: failed to send keys\n", argv0);
 				if (current > 0) {
 					fprintf(
 						stderr, "warning: %u keys have been sent\n", current);
@@ -166,7 +167,7 @@ int main(int argc, char **argv) {
 		// Send keys one-by-one
 		for (uint32_t i = 0; i < strlen(input); i++) {
 			if (send_key(domain, input[i]) != EXIT_SUCCESS) {
-				fprintf(stderr, "%s: failed to send keys\n", VIRSH_SS);
+				fprintf(stderr, "%s: failed to send keys\n", argv0);
 				if (i > 0) {
 					fprintf(stderr, "warning: %u keys have been sent\n", i);
 				}
@@ -181,7 +182,7 @@ int main(int argc, char **argv) {
 
 	if (newline) {
 		if (send_key(domain, '\n') != EXIT_SUCCESS) {
-			fprintf(stderr, "%s: failed to send newline\n", VIRSH_SS);
+			fprintf(stderr, "%s: failed to send newline\n", argv0);
 			fprintf(stderr, "warning: string was sent\n");
 
 			if (prompt) {
@@ -210,7 +211,7 @@ static char *get_input(void) {
 		// Ensure that read is from the terminal
 		int tty_fd = open("/dev/tty", O_RDWR);
 		if (tty_fd < 0) {
-			fprintf(stderr, "%s: failed to open /dev/tty: %s\n", VIRSH_SS,
+			fprintf(stderr, "%s: failed to open /dev/tty: %s\n", argv0,
 				strerror(errno));
 			exit(EXIT_FAILURE);
 		}
@@ -231,10 +232,10 @@ static char *get_input(void) {
 
 	if (input == NULL) {
 		if (err == NRL_ERR_EMPTY) {
-			fprintf(stderr, "%s: no input was given\n", VIRSH_SS);
+			fprintf(stderr, "%s: no input was given\n", argv0);
 			exit(EXIT_FAILURE);
 		} else {
-			fprintf(stderr, "%s: failed to read input\n", VIRSH_SS);
+			fprintf(stderr, "%s: failed to read input\n", argv0);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -246,7 +247,7 @@ static char *get_input(void) {
  * @brief Print usage information.
  */
 static void print_usage(void) {
-	printf("Usage: %s <domain> <string> [options]\n", VIRSH_SS);
+	printf("Usage: %s <domain> <string> [options]\n", argv0);
 	printf("%10s - %s\n", "domain", "libvirt domain name");
 	printf("%10s - %s\n", "string", "string to send (if prompt not set)");
 	printf("\nOptions:\n");
@@ -324,7 +325,7 @@ static int send_key(char *domain, char c) {
 	}
 
 #if DEBUG == 1
-	printf("debug: sending command\n");
+	printf("%s: [debug] sending command\n", argv0);
 	char **args_trav = args;
 	while (*args_trav != NULL) {
 		printf("\t%s\n", *args_trav);
@@ -369,7 +370,7 @@ static int send_keys(char *domain, const char *keys, uint32_t count) {
 	args[3 + shifted + count] = NULL;
 
 #if DEBUG == 1
-	printf("debug: sending command\n");
+	printf("%s: [debug] sending command\n", argv0);
 	char **args_trav = args;
 	while (*args_trav != NULL) {
 		printf("\t%s\n", *args_trav);
@@ -464,7 +465,7 @@ static int run_virsh(char **args) {
 	// Fork process
 	pid_t pid = fork();
 	if (pid < 0) {
-		fprintf(stderr, "%s: failed to fork process\n", VIRSH_SS);
+		fprintf(stderr, "%s: failed to fork process\n", argv0);
 		return EXIT_FAILURE;
 	}
 
@@ -476,7 +477,7 @@ static int run_virsh(char **args) {
 		close(dev_null);
 
 		execvp(args[0], args);
-		fprintf(stderr, "%s: failed to exec virsh\n", VIRSH_SS);
+		fprintf(stderr, "%s: failed to exec virsh\n", argv0);
 		exit(EXIT_FAILURE);
 	}
 
