@@ -55,7 +55,7 @@ clean:
 
 .PHONY: $(LIBUTILS)
 $(LIBUTILS): lib/c-utils
-	$</version.sh nanorl 1.2r
+	$</version.sh nanorl 1.2.1
 	$(MAKE) -C $< $(TASK) \
 		CONFIG_PATH=$(LIBUTILS_CONFIG) \
 		BUILD=$(BUILD)
