@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0.0
+ * @version 1.0.1
  * @date 2023-2024
  * @license GPLv3.0
  */
@@ -34,7 +34,7 @@
 
 // Fallback version number
 #ifndef VIRSH_SS_VERSION
-#define VIRSH_SS_VERSION "1.0.0"
+#define VIRSH_SS_VERSION "1.0.1"
 #endif
 
 // Shift send-key command
