@@ -1,0 +1,41 @@
+# This PKGBUILD is not published to the AUR
+# Maintainer: Vladyslav Aviedov <vladaviedov at protonmail dot com>
+pkgname=virsh-ss
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="Send string to libvirt virtual machine"
+arch=('x86_64')
+url='https://github.com/vladaviedov/virsh-ss'
+license=('GPL-3.0-only')
+depends=('libvirt')
+makedepends=('git')
+source=("${pkgname}-${pkgver}::git+https://github.com/vladaviedov/virsh-ss.git#tag=v${pkgver}"
+	"c-utils::git+https://github.com/vladaviedov/c-utils.git")
+sha256sums=('SKIP'
+	'SKIP')
+
+prepare() {
+	cd "${pkgname}-${pkgver}"
+	git submodule init
+
+	# c-utils submodule
+	git config submodule.libs/c-utils.url "$srcdir/c-utils"
+	git -c protocol.file.allow=always submodule update
+}
+
+build() {
+	cd "${pkgname}-${pkgver}"
+
+	# nanorl config: disable other OS database paths
+	export DEBIAN_DIRS=0
+	export FREEBSD_DIRS=0
+	export NETBSD_DIRS=0
+	export ENABLE_FASTLOAD=1
+	
+	make -j"$(nproc)"
+}
+
+package() {
+	cd "${pkgname}-${pkgver}"
+	make install PREFIX="$pkgdir/usr"
+}
