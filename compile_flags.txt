@@ -1,1 +1,6 @@
+-Wall
+-Wextra
+-g
+-Iinclude
 -Ibuild/include
+-std=c99

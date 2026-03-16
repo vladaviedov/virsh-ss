@@ -1,4 +1,3 @@
-[submodule "lib/c-utils"]
-	path = lib/c-utils
-	url = https://github.com/vladaviedov/c-utils.git
-	ignore = dirty
+[submodule "lib/nanorl"]
+	path = lib/nanorl
+	url = https://github.com/vladaviedov/nanorl

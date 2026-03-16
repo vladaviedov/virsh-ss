@@ -12,7 +12,7 @@ IncludeCategories:
   - Regex: '^".*'
     Priority: 3
     CaseSensitive: true
-  - Regex: '^<c-utils/'
+  - Regex: '^<nanorl/'
     Priority: 2
     CaseSensitive: true
   - Regex: '^<.*'
