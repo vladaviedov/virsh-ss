@@ -19,7 +19,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include <c-utils/nanorl.h>
+#include <nanorl/nanorl.h>
 
 #include "charmap.h"
 
@@ -217,28 +217,39 @@ static char *get_input(void) {
 			exit(EXIT_FAILURE);
 		}
 
-		nrl_opts opts = {
-			.fd = tty_fd,
-			.prompt = "input string: ",
-			.echo = NRL_ECHO_FAKE,
-			.echo_repl = '*',
-		};
+		nrl_config config = nrl_default_config();
+		config.read_file = tty_fd;
+		config.echo_mode = tty_fd;
+		config.prompt = "input string: ";
+		config.echo_mode = NRL_ECHO_OBSCURED;
 
-		input = nanorl_opts(&opts, &err);
+		input = nanorl(&config, &err);
 		close(tty_fd);
 	} else {
 		// Doesn't matter in this case
-		input = nanorl("input string: ", &err);
+		nrl_config config = nrl_default_config();
+		config.prompt = "input string: ";
+
+		input = nanorl(&config, &err);
 	}
 
-	if (input == NULL) {
-		if (err == NRL_ERR_EMPTY) {
-			fprintf(stderr, "%s: no input was given\n", argv0);
-			exit(EXIT_FAILURE);
-		} else {
-			fprintf(stderr, "%s: failed to read input\n", argv0);
-			exit(EXIT_FAILURE);
-		}
+	switch (err) {
+	case NRL_ERROR_OK:
+		break;
+	case NRL_ERROR_INTERRUPT:
+		free(input);
+		fprintf(stderr, "%s: interrupted\n", argv0);
+		exit(EXIT_FAILURE);
+	case NRL_ERROR_SYSTEM:
+		fprintf(
+			stderr, "%s: failed to read input: %s\n", argv0, strerror(errno));
+		exit(EXIT_FAILURE);
+	case NRL_ERROR_EOF:
+		fprintf(stderr, "%s: no input was given\n", argv0);
+		exit(EXIT_FAILURE);
+	case NRL_ERROR_ARG:
+		fprintf(stderr, "%s: internal argument error\n", argv0);
+		exit(EXIT_FAILURE);
 	}
 
 	return input;
