@@ -5,6 +5,7 @@
  * @date 2023-2024
  * @license GPLv3.0
  */
+#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -441,7 +442,7 @@ static void format_key(
 	}
 
 	// Format misc characters
-	const char *formatted;
+	const char *formatted = NULL;
 	for (uint32_t i = 0; i < MISC_KEY_COUNT; i++) {
 		const kb_key *entry = misc_keys + i;
 
@@ -452,6 +453,7 @@ static void format_key(
 		}
 	}
 
+	assert(formatted != NULL);
 	snprintf(buffer, buffer_size, "%s", formatted);
 }
 
