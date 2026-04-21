@@ -9,11 +9,11 @@ machines.
 - GNU make.
 - `gzip` (for `make install`).
 - `virsh` (for runtime).
+- [`nanorl`](https://github.com/vladaviedov/nanorl)
 
 ## Build
 ```
-git submodule update --init
-make && make install
+make
 ```
 
 ### Development
@@ -21,14 +21,14 @@ make && make install
 - `make release` - Build release binary (same as `make`).
 - `make debug` - Build debug binary.
 - `make clean` - Remove build files.
+- `make checkformat` - Check for code formatting errors.
+- `make format` - Reformat the code.
 
 ### Configuration
 
 |Macro|Description|Default|
 |---|---|---|
 |`VIRSH_BIN`|Name of the system default virsh binary|`virsh`|
-
-Also, [nanorl](https://github.com/vladaviedov/c-utils/blob/master/nanorl/README.md) has configuration options.
 
 ## Install
 
