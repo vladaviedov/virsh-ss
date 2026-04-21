@@ -1,8 +1,8 @@
 /**
  * @file main.c
  * @author Vladyslav Aviedov <vladaviedov at protonmail dot com>
- * @version 1.0.1
- * @date 2023-2024
+ * @version 1.1.0
+ * @date 2023-2026
  * @license GPLv3.0
  */
 #include <assert.h>
@@ -280,7 +280,7 @@ static void print_usage(void) {
 static void print_version(void) {
 	printf("virsh-ss version %s\n", VIRSH_SS_VERSION);
 
-	printf("\nCopyright (C) 2024 Vladyslav Aviedov\n");
+	printf("\nCopyright (C) 2024-2026 Vladyslav Aviedov\n");
 	printf("This program is free software released under the GNU GPLv3\n");
 }
 
