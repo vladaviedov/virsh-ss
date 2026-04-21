@@ -7,13 +7,10 @@ CC=gcc
 CFLAGS=-I$(BUILD)/include -std=c99 -DVIRSH_SS_VERSION=$(VERSION)
 CFLAGS_RELEASE=-O2
 CFLAGS_DEBUG=-Wall -Wextra -g -DDEBUG=1
-LDFLAGS=-L$(BUILD)/lib -Wl,-Bstatic -lnanorl -Wl,-Bdynamic
+LDFLAGS=-L$(BUILD)/lib -lnanorl
 
 BUILD_DIRS=$(BUILD) \
-		   $(BUILD)/lib \
 		   $(BUILD)/bin
-
-LIBNANORL=$(BUILD)/lib/libnanorl.a
 
 TARGET=$(BUILD)/bin/virsh-ss
 MAN_PAGE=$(PWD)/doc/virsh-ss.man
@@ -52,12 +49,7 @@ build: $(BUILD_DIRS) $(TARGET)
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: $(LIBNANORL)
-$(LIBNANORL): lib/nanorl
-	$(MAKE) -C $< $(TASK) \
-		BUILD=$(BUILD)
-
-$(TARGET): src/main.c src/charmap.h $(LIBNANORL)
+$(TARGET): src/main.c src/charmap.h
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # Formatting
